@@ -1,7 +1,9 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+
 from core.models import PublishedModel
+
 
 User = get_user_model()
 
@@ -44,19 +46,22 @@ class Post(PublishedModel):
         verbose_name='Категория',
         related_name='posts',
     )
+    image = models.ImageField(
+        verbose_name='Изображение',
+        upload_to='posts_images',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', 'title',)
 
-    def get_absolute_url(self) -> str:
-        return reverse('blog:post_detail', kwargs={'pk': self.pk})
-
     def __str__(self) -> str:
         return (
             f"""
-            {self.pub_date:%Y.%m.%d %H:%M} | {self.author}
+            {self.pub_date:%d.%m.%Y %H:%M} | {self.author}
             : "{self.title[:20]}" {self.text[:50]}
             """
         )
@@ -103,3 +108,35 @@ class Location(PublishedModel):
 
     def __str__(self) -> str:
         return self.name[:20]
+  
+
+class Comment(models.Model):
+    """Модель для комментариев."""
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+        related_name='comments'
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        verbose_name='Комментарий',
+        related_name='comments'
+    )
+    text = models.TextField(verbose_name='Текст')
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Добавлено'
+    )
+
+    class Meta:
+        verbose_name = "комментарий"
+        verbose_name_plural = "Комментарии"
+        default_related_name = "comments"
+        ordering = ("created_at",)
+
+    def __str__(self) -> str:
+        text = str(self.text)
+        return text[:20]
