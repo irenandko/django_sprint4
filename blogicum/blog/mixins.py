@@ -1,5 +1,5 @@
 from .models import Post, Comment
-from .forms import CommentForm, PostForm
+from .forms import PostForm
 from django.shortcuts import redirect
 from django.urls import reverse
 

@@ -242,7 +242,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
 class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
     """Отображает форму редактирования комментария."""
-    
+
     form_class = CommentForm
     success_url = reverse_lazy('blog:index')
 
