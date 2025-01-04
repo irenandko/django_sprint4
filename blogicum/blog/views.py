@@ -100,7 +100,7 @@ class PostUpdateView(PostMixin, LoginRequiredMixin, UpdateView):
             return redirect(
                 reverse(
                     'blog:post_detail',
-                    kwargs={'post_id': self.kwargs['post_id']}
+                    kwargs={'pk': self.object.pk}
                 )
             )
         else:
@@ -109,7 +109,7 @@ class PostUpdateView(PostMixin, LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy(
             'blog:post_detail',
-            args=[self.kwargs['post_id']]
+            kwargs={'pk': self.object.pk}
         )
 
 
@@ -242,7 +242,8 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
 class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
     """Отображает форму редактирования комментария."""
-
+    
+    form_class = CommentForm
     success_url = reverse_lazy('blog:index')
 
 

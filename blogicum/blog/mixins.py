@@ -12,7 +12,6 @@ class PostMixin:
 
 class CommentMixin:
     model = Comment
-    form_class = CommentForm
     template_name = 'blog/comment.html'
     pk_url_kwarg = 'comment_id'
 
