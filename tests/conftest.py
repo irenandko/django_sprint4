@@ -25,6 +25,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.test.client import Client
 from mixer.backend.django import mixer as _mixer
+from django.conf import settings
 
 N_PER_FIXTURE = 3
 N_PER_PAGE = 10

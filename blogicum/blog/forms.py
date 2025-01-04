@@ -1,5 +1,4 @@
 from django import forms
-from django.utils import timezone
 
 from .models import Post, Comment, User
 
@@ -14,7 +13,7 @@ class ProfileForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     """Форма для поста."""
-    
+ 
     class Meta:
         model = Post
         exclude = ('author', )

@@ -20,7 +20,7 @@ urlpatterns = [
          views.PostDetailView.as_view(), name='post_detail'),
     path('posts/<post_id>/delete/',
          views.PostDeleteView.as_view(), name='delete_post'),
-   
+
     path('category/<slug:category_slug>/',
          views.CategoryView.as_view(), name='category_posts'),
 

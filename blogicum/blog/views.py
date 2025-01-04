@@ -1,13 +1,10 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import (
     ListView, CreateView, UpdateView, DeleteView, DetailView)
-from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.db.models import Count
-from django.http import Http404
-from django.core.exceptions import PermissionDenied
 
 from .models import Post, Category, Comment, User
 from .forms import PostForm, CommentForm, ProfileForm
@@ -90,8 +87,8 @@ class PostUpdateView(PostMixin, LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
 
         self.object = self.get_object()
-        is_auth_author = (self.request.user.is_authenticated and
-                          self.object.author == self.request.user)
+        is_auth_author = (self.request.user.is_authenticated
+                          and self.object.author == self.request.user)
 
         if not is_auth_author:
             return redirect(
@@ -127,7 +124,7 @@ class PostDetailView(DetailView):
             obj = self.model.objects.select_related(
                 'location', 'category', 'author'
             )
-            filtered_obj = get_published_posts(obj) 
+            filtered_obj = get_published_posts(obj)
             return get_object_or_404(
                 filtered_obj,
                 pk=self.kwargs['pk']
@@ -194,8 +191,8 @@ class CategoryView(ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(
-            Category, 
-            slug=self.kwargs['category_slug'], 
+            Category,
+            slug=self.kwargs['category_slug'],
             is_published=True
         )
 

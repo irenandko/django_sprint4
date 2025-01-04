@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 from core.models import PublishedModel
@@ -108,7 +107,7 @@ class Location(PublishedModel):
 
     def __str__(self) -> str:
         return self.name[:20]
-  
+
 
 class Comment(models.Model):
     """Модель для комментариев."""
