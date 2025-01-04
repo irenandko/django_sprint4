@@ -4,7 +4,8 @@ from django.views.generic import (
     ListView, CreateView, UpdateView, DeleteView, DetailView)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
-from django.db.models import Count
+from django.db.models import Count, Value
+from django.db.models.functions import Coalesce
 
 from .models import Post, Category, Comment, User
 from .forms import PostForm, CommentForm, ProfileForm
@@ -33,10 +34,10 @@ class ProfileView(ListView):
                 author=self.author,
                 is_published=True,
                 category__is_published=True,
-            )
+            ).annotate(comment_count=Coalesce(Count('comments'), Value(0)))
         return super().get_queryset().filter(
             author=self.author
-        )
+        ).annotate(comment_count=Coalesce(Count('comments'), Value(0)))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -121,12 +122,14 @@ class PostDetailView(DetailView):
             ),
         )
         if object.author != self.request.user:
-            obj = self.model.objects.select_related(
-                'location', 'category', 'author'
-            )
-            filtered_obj = get_published_posts(obj)
             return get_object_or_404(
-                filtered_obj,
+                self.model.objects.select_related(
+                    'location', 'category', 'author'
+                ).filter(
+                    pub_date__lte=timezone.now(),
+                    category__is_published=True,
+                    is_published=True
+                ),
                 pk=self.kwargs['pk']
             )
         return object
@@ -174,7 +177,7 @@ class PostListView(ListView):
         queryset = (
             queryset.select_related('author')
             .prefetch_related('category', 'location')
-            .annotate(comment_count=Count('comments'))
+            .annotate(comment_count=Coalesce(Count('comments'), Value(0)))
             .order_by('-pub_date')
         )
         return queryset
