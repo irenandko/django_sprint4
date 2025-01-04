@@ -34,10 +34,15 @@ class ProfileView(ListView):
                 author=self.author,
                 is_published=True,
                 category__is_published=True,
-            ).annotate(comment_count=Coalesce(Count('comments'), Value(0)))
+            ).annotate(
+                comment_count=Coalesce(Count('comments'), Value(0))
+            ).order_by('-pub_date')
+
         return super().get_queryset().filter(
             author=self.author
-        ).annotate(comment_count=Coalesce(Count('comments'), Value(0)))
+        ).annotate(
+            comment_count=Coalesce(Count('comments'), Value(0))
+        ).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
