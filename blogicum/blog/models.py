@@ -48,7 +48,7 @@ class Post(PublishedModel):
     )
     image = models.ImageField(
         verbose_name='Изображение',
-        upload_to='posts_images',
+        upload_to='media',
         null=True,
         blank=True
     )
