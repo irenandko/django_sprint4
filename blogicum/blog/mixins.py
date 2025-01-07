@@ -5,12 +5,16 @@ from django.urls import reverse
 
 
 class PostMixin:
+    """Миксин для создания и редактирования поста."""
+
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
 
 
 class CommentMixin:
+    """Миксин для редактирования и удаления комментария."""
+
     model = Comment
     template_name = 'blog/comment.html'
     pk_url_kwarg = 'comment_id'

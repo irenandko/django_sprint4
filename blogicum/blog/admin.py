@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Category, Location, Post, Comment
 
+""" Регистрация моделей в админ-зоне. """
 
 admin.site.register(Category)
 admin.site.register(Location)

@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import (
-    ListView, CreateView, UpdateView, DeleteView, DetailView)
+    ListView, CreateView, UpdateView, DeleteView, DetailView
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.db.models import Count, Value
@@ -13,6 +14,16 @@ from .mixins import PostMixin, CommentMixin
 
 from core.utils import get_published_posts
 
+
+"""
+get_queryset() - возвращает все объекты для модели, связанной с представлением,
+get_context_data() - для заполнения словаря контекста шаблона.
+get_object() - возвращает экземпляр объекта для подробных представлений.
+get_success_url() - возвращает URL для перехода после успешной обработки формы.
+form_valid() — метод вызывается при обработке формы в случае успеха.
+dispatch() - отвечает за маршрутизацию запроса к нужному обработчику
+             в зависимости от типа HTTP-метода (GET, POST, PUT, DELETE и тд).
+"""
 
 # Страница профиля и работа с ней
 
@@ -29,6 +40,8 @@ class ProfileView(ListView):
             User,
             username=self.kwargs.get('username')
         )
+
+        # пользователь просматривает страницу другого пользователя
         if self.author != self.request.user:
             return super().get_queryset().filter(
                 author=self.author,
@@ -38,6 +51,7 @@ class ProfileView(ListView):
                 comment_count=Coalesce(Count('comments'), Value(0))
             ).order_by('-pub_date')
 
+        # пользователь просматривает свою страницу
         return super().get_queryset().filter(
             author=self.author
         ).annotate(
@@ -58,8 +72,9 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = 'blog/user.html'
 
     def get_success_url(self):
+        username = self.object.username
         return reverse_lazy(
-            'blog:profile', kwargs={'username': self.object.username}
+            'blog:profile', kwargs={'username': username}
         )
 
     def get_object(self):
@@ -97,19 +112,17 @@ class PostUpdateView(PostMixin, LoginRequiredMixin, UpdateView):
                           and self.object.author == self.request.user)
 
         if not is_auth_author:
+            pers_key = self.object.pk
             return redirect(
-                reverse(
-                    'blog:post_detail',
-                    kwargs={'pk': self.object.pk}
-                )
+                reverse('blog:post_detail', kwargs={'pk': pers_key})
             )
         else:
             return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
+        pers_key = self.object.pk
         return reverse_lazy(
-            'blog:post_detail',
-            kwargs={'pk': self.object.pk}
+            'blog:post_detail', kwargs={'pk': pers_key}
         )
 
 
@@ -128,12 +141,10 @@ class PostDetailView(DetailView):
         )
         if object.author != self.request.user:
             return get_object_or_404(
-                self.model.objects.select_related(
-                    'location', 'category', 'author'
-                ).filter(
-                    pub_date__lte=timezone.now(),
-                    category__is_published=True,
-                    is_published=True
+                get_published_posts(
+                    self.model.objects.select_related(
+                        'location', 'category', 'author'
+                    )
                 ),
                 pk=self.kwargs['pk']
             )
@@ -155,7 +166,6 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
 
     model = Post
     template_name = 'blog/create.html'
-    success_url = reverse_lazy('blog:index')
     pk_url_kwarg = 'post_id'
 
     def dispatch(self, request, *args, **kwargs):
@@ -186,7 +196,7 @@ class PostListView(ListView):
         queryset = get_published_posts(super().get_queryset())
         queryset = (
             queryset.select_related('author')
-            .prefetch_related('category', 'location')
+            .prefetch_related('location', 'category')
             .annotate(comment_count=Coalesce(Count('comments'), Value(0)))
             .order_by('-pub_date')
         )
